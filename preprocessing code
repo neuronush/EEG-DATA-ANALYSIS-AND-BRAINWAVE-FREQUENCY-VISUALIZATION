@@ -1,0 +1,43 @@
+import os
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import mne
+
+# Step 1: Define the folder path and CSV filenames for 2 subjects
+folder_path = 'C:/Users/ANOUSHKA/pythonproject/data/archive'
+subject_filenames = ['s01.csv', 's02.csv']
+
+# Step 2: Data Preprocessing Function 
+def preprocess_eeg_data(csv_file_path):
+    # Load the CSV data
+    data = pd.read_csv(csv_file_path)
+    
+    # Standard Preprocessing Steps:
+    # 1. Convert the data to an MNE RawArray object
+    channel_names = data.columns[1:]
+    channel_types = ['eeg'] * len(channel_names)
+    sampling_rate = 256
+    info = mne.create_info(channel_names.tolist(), sampling_rate, ch_types=channel_types)
+    raw = mne.io.RawArray(data.iloc[:, 1:].values.T, info)
+    
+    # 2. Apply bandpass filtering (0.5 Hz to 50 Hz) with common default values
+    raw.filter(0.5, 50.0, fir_design='firwin')
+    
+    # 3. Notch filtering to remove powerline interference 
+    powerline_freq = 50.0  
+    raw.notch_filter(powerline_freq, fir_design='firwin')
+    
+    # 4. Epoch the data into smaller segments (e.g., 2 seconds) for further analysis
+    epoch_duration = 2.0  # seconds
+    events = mne.make_fixed_length_events(raw, duration=epoch_duration)
+    epochs = mne.Epochs(raw, events, tmin=0, tmax=epoch_duration, baseline=None, reject=None)
+    
+    return epochs
+
+# Step 3: Loop through each subject's CSV file, preprocess, and store them
+preprocessed_epochs_list = []
+for subject_file in subject_filenames:
+    subject_file_path = os.path.join(folder_path, subject_file)
+    preprocessed_epochs = preprocess_eeg_data(subject_file_path)
+    preprocessed_epochs_list.append(preprocessed_epochs)
