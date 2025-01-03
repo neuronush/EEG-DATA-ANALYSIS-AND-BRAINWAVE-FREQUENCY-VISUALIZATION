@@ -1,0 +1,67 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Step 1: Define the function for Fourier Transform and frequency analysis
+def perform_fourier_transform(epochs_data):
+    # Compute the Fast Fourier Transform (FFT) on the data
+    fft_data = np.fft.fft(epochs_data)
+    
+    # Compute the corresponding frequencies
+    sampling_rate = 256 
+    frequencies = np.fft.fftfreq(len(epochs_data[0]), 1/sampling_rate)
+    
+    # Return the FFT data and frequencies
+    return fft_data, frequencies
+
+# Step 2: Apply Fourier Transform on the preprocessed EEG data
+subject_1_data = preprocessed_epochs_list[0].get_data()
+subject_2_data = preprocessed_epochs_list[1].get_data()
+
+fft_subject_1, frequencies_subject_1 = perform_fourier_transform(subject_1_data)
+fft_subject_2, frequencies_subject_2 = perform_fourier_transform(subject_2_data)
+
+# Step 3: Perform Brainwave Frequency Analysis 
+#average power in the alpha (8-12 Hz) and beta (13-30 Hz) frequency bands.
+def calculate_power_in_frequency_band(fft_data, frequencies, lower_freq, upper_freq):
+    # Find the indices corresponding to the frequency band
+    band_indices = np.logical_and(frequencies >= lower_freq, frequencies <= upper_freq)
+    # Calculate the power in the frequency band
+    power_band = np.mean(np.abs(fft_data[:, band_indices])**2, axis=1)
+    
+    return power_band
+
+# Define frequency bands of interest (Alpha and Beta)
+alpha_lower, alpha_upper = 8.0, 12.0
+beta_lower, beta_upper = 13.0, 30.0
+
+# Calculate power in the Alpha and Beta bands for both subjects
+alpha_power_subject_1 = calculate_power_in_frequency_band(fft_subject_1, frequencies_subject_1, alpha_lower, alpha_upper)
+beta_power_subject_1 = calculate_power_in_frequency_band(fft_subject_1, frequencies_subject_1, beta_lower, beta_upper)
+
+alpha_power_subject_2 = calculate_power_in_frequency_band(fft_subject_2, frequencies_subject_2, alpha_lower, alpha_upper)
+beta_power_subject_2 = calculate_power_in_frequency_band(fft_subject_2, frequencies_subject_2, beta_lower, beta_upper)
+
+# Bar plot of power in Alpha and Beta bands
+
+def plot_power_bands(alpha_power, beta_power, subject_labels):
+    x = np.arange(len(subject_labels))
+    width = 0.35
+    
+    fig, ax = plt.subplots()
+    rects1 = ax.bar(x - width/2, alpha_power, width, label='Alpha Power')
+    rects2 = ax.bar(x + width/2, beta_power, width, label='Beta Power')
+    
+    ax.set_ylabel('Power')
+    ax.set_title('Power in Alpha and Beta Bands')
+    ax.set_xticks(x)
+    ax.set_xticklabels(subject_labels)
+    ax.legend()
+    
+    fig.tight_layout()
+    plt.show()
+
+# Plot the power in Alpha and Beta bands for both subjects
+subject_labels = ['Subject 1', 'Subject 2']
+plot_power_bands([alpha_power_subject_1.mean(), alpha_power_subject_2.mean()],
+                 [beta_power_subject_1.mean(), beta_power_subject_2.mean()],
+                 subject_labels)
