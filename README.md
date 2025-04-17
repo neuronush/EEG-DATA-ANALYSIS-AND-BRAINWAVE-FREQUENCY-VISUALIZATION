@@ -1,2 +1,2 @@
 # EEG-DATA-ANALYSIS-AND-BRAINWAVE-FREQUENCY-VISUALIZATION
-The aim of this project was to analyze EEG (Electroencephalogram) data and visualize brainwave frequencies using Python. EEG data offers valuable insights into brain activity and can help in understanding various cognitive processes. 
+The aim of this project was to analyze EEG (Electroencephalogram) data and visualize brainwave frequencies using Python. I performed preprocessing of the EEG data, performed Fourier Transform to extract frequency information, and visualized the power spectrum using bar graphs and heatmaps. Additionally, I also created topographic maps to showcase the spatial distribution of brainwave frequencies across different EEG channels.
